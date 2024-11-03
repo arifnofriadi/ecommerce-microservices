@@ -103,6 +103,54 @@ app.post('/products', async (req, res) => {
     }
 });
 
+// update product
+app.put('/products/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { name, description, price } = req.body;
+
+        // input validation
+        if (!name || !price) {
+            return errorResponse(res, 400, 'Name and Price are required');
+        }
+
+        // find product by id   
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return errorResponse(res, 404, 'Product Not Found');
+        }
+
+        product.name = name || product.name;
+        product.description = description || product.description;
+        product.price = price || product.price;
+
+        // update product
+        await product.save();
+        successResponse(res, 'Product Updated', product);
+    } catch (error) {
+        console.log(error);
+        errorResponse(res, 500, 'Error Updating Product');
+    }
+});
+
+// delete product
+app.delete('/products/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const product = await Product.findByPk(id);
+
+        if (!product) {
+            return errorResponse(res, 404, 'Product Not Found');
+        }
+        
+        await product.destroy();
+        successResponse(res, 'Product Deleted');
+    } catch (error) {
+        console.log(error);
+        errorResponse(res, 500, 'Error Deleting Product');
+    }
+});
+
 // middleware to handling error
 app.use((err, req, res, next) => {
     const statusCode = err.status || 500;
