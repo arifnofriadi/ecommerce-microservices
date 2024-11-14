@@ -6,6 +6,7 @@
     "type": "project",
     "require": {
         "php": "^8.1",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/lumen-framework": "^10.0"
     },
     "require-dev": {
@@ -18,7 +19,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/ResponseHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

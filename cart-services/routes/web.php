@@ -18,5 +18,9 @@ $router->get('/', function () use ($router) {
 });
 
 
-$router->get('carts', 'CartController@index');
-$router->get('carts/{id}', 'CartController@show');
+$router->get('/cart', 'CartController@index');
+$router->get('/cart/{id}', 'CartController@show');
+$router->post('/cart', 'CartController@store');
+$router->put('/cart/{id}', 'CartController@update');
+$router->delete('/cart/{id}', 'CartController@destroy');
+
