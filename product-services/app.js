@@ -2,9 +2,11 @@ const express = require('express')
 const app = express()
 const sequelize = require('./database');
 const { DataTypes } = require('sequelize');
+const cors = require('cors');
 
 // middleware for parsing JSON
 app.use(express.json());
+app.use(cors());
 
 // define model product
 const Product = sequelize.define('Product', {
@@ -22,10 +24,11 @@ const Product = sequelize.define('Product', {
     }
 });
 
+// initialize database
 const initDb = async () => {
     try {
         await sequelize.sync({ force: false }); // Use force: true if you want to drop and recreate the table
-        console.log("Database & tables created!");
+        console.log("Products table synced with database");
     } catch (error) {
         console.error("Error creating database tables:", error);
     }
@@ -33,12 +36,8 @@ const initDb = async () => {
 
 initDb();
 
-// sync model with database
-sequelize.sync().then(() => {
-    console.log('Products table synced with database');
-});
 
-
+// standar response function
 const successResponse = (res, message, data = null) => {
     res.status(200).json({
         success: true,
@@ -53,6 +52,7 @@ const errorResponse = (res, status, message) => {
         message: message
     });
 };
+
 
 // get all product
 app.get('/products', async (req, res) => {
@@ -151,9 +151,10 @@ app.delete('/products/:id', async (req, res) => {
     }
 });
 
-// middleware to handling error
+// error handling middleware
 app.use((err, req, res, next) => {
     const statusCode = err.status || 500;
+    console.error(err.stack);
     res.status(statusCode).json({
         success: false,
         message: err.message || 'Internal Server Error'
