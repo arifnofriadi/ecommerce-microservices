@@ -27,7 +27,7 @@ const Product = sequelize.define('Product', {
 // initialize database
 const initDb = async () => {
     try {
-        await sequelize.sync({ force: false }); // Use force: true if you want to drop and recreate the table
+        await sequelize.sync({ alter: true }); // Use force: true if you want to drop and recreate the table
         console.log("Products table synced with database");
     } catch (error) {
         console.error("Error creating database tables:", error);
