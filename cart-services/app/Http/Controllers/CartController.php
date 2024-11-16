@@ -14,7 +14,9 @@ class CartController extends Controller
 
     public function __construct()
     {
-        $this->client = new \GuzzleHttp\Client(['base_uri' => 'http://localhost:3000']);
+        $appEnv = env('APP_ENV', 'local');
+        $baseUri = $appEnv == 'local' ? 'http://localhost:3000' : 'http://product-service:3000';
+        $this->client = new \GuzzleHttp\Client(['base_uri' => $baseUri]);
     }
 
     public function getProduct($productId = null)

@@ -19,11 +19,35 @@ services:
       start_period: 30s
       timeout: 5s
 
+  cart-service:
+    build:
+      context: ./cart-services
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - DB_HOST=cart-db
+      - DB_USER=postgres
+      - DB_PASSWORD=Dev@root23
+      - DB_NAME=cartdb
+      - APP_ENV=docker
+    depends_on:
+      - cart-db
+    healthcheck:
+      test: ["CMD", "pg_isready", "--host=cart-db", "--username=postgres", "--dbname=cartdb"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+    command: bash -c "php artisan migrate && php -S 0.0.0.0:3002 -t public"
+
   product-db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: Dev@root23
-      MYSQL_DATABASE: productdb
+      - DB_HOST=cart-db
+      - DB_USER=postgres  # Pastikan ini sesuai dengan user yang dibuat di cart-db
+      - DB_PASSWORD=Dev@root23
+      - DB_NAME=cartdb
     volumes:
       - product-db-data:/var/lib/mysql
     healthcheck:
@@ -33,5 +57,21 @@ services:
       start_period: 30s
       timeout: 5s
 
+  cart-db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres  # User default PostgreSQL
+      POSTGRES_PASSWORD: Dev@root23
+      POSTGRES_DB: cartdb
+    volumes:
+      - cart-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "--host=localhost", "--username=postgres", "--dbname=cartdb"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
 volumes:
   product-db-data:
+  cart-db-data:
