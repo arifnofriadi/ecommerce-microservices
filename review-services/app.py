@@ -3,33 +3,45 @@ from pymongo import MongoClient
 from urllib.parse import quote_plus
 from bson import ObjectId
 import requests
+import os
 
 app = Flask(__name__)
 
 # set up mongodb connection
-username = "root"  
-password = "Dev@root23"
+username = os.getenv("MONGO_USER", "root")  
+password = os.getenv("MONGO_PASSWORD", "Dev@root23")
 
 # encoding username and password
 encoded_username = quote_plus(username)
 encoded_password = quote_plus(password)
 
-# set up database and collect
-MONGO_URI = f"mongodb://{encoded_username}:{encoded_password}@127.0.0.1:27017/review_service?authSource=admin"
+# determine mongo uri basen on environment
+mongo_host = os.getenv("MONGO_HOST", "localhost" if os.getenv("HOSTNAME") is None else "review-db")
+mongo_port = os.getenv("MONGO_PORT", "27017")
+mongo_db = os.getenv("MONGO_DB", "review_service")
+mongo_auth_source = os.getenv("MONGO_AUTH_SOURCE", "admin")
+
+MONGO_URI = f"mongodb://{encoded_username}:{encoded_password}@{mongo_host}:{mongo_port}/{mongo_db}?authSource={mongo_auth_source}"
+
+# connect to mongodb
 client = MongoClient(MONGO_URI)
 db = client["review_service"]
 reviews_collection = db["reviews"]
 
-# Product Service Endpoint
-PRODUCT_SERVICE_URL = "http://localhost:3000/products/"
+# determineproduct service url base on environment
+product_service_host = "localhost" if os.getenv("HOSTNAME") is None else "product-service"
+PRODUCT_SERVICE_URL = f"http://{product_service_host}:3000/products/"
 
 # Helper to get product data from product service
 def get_product_data(product_id):
     try:
         response = requests.get(f'{PRODUCT_SERVICE_URL}{product_id}')
+        print(f"Requesting: {PRODUCT_SERVICE_URL}{product_id}")
         if response.status_code == 200:
             return response.json().get("data")
-        return None
+        else:
+            print(f"Error fetching product: {response.status_code} - {response.text}")  # Log error
+            return None
     except requests.exceptions.RequestException as e:
         print(f"Error fetching product data: {e}")
         return None

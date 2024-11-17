@@ -41,11 +41,29 @@ services:
       timeout: 5s
     command: bash -c "php artisan migrate && php -S 0.0.0.0:3002 -t public"
 
+  review-service:
+    build:
+      context: ./review-services  
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      - MONGO_URI=mongodb://root:Dev@root23@review-db:27017/review_service
+      - MONGO_HOST=review-db 
+    depends_on:
+      - review-db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.stats()"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
   product-db:
     image: mysql:8.0
     environment:
       - DB_HOST=cart-db
-      - DB_USER=postgres  # Pastikan ini sesuai dengan user yang dibuat di cart-db
+      - DB_USER=postgres 
       - DB_PASSWORD=Dev@root23
       - DB_NAME=cartdb
     volumes:
@@ -60,7 +78,7 @@ services:
   cart-db:
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres  # User default PostgreSQL
+      POSTGRES_USER: postgres  
       POSTGRES_PASSWORD: Dev@root23
       POSTGRES_DB: cartdb
     volumes:
@@ -72,6 +90,24 @@ services:
       start_period: 30s
       timeout: 5s
 
+  review-db:
+    image: mongo:6.0
+    container_name: review-db
+    ports:
+      - "27017:27017" 
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: Dev@root23
+    volumes:
+      - review-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.stats()"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
 volumes:
   product-db-data:
   cart-db-data:
+  review-db-data:
