@@ -1,14 +1,20 @@
 from flask import Flask, jsonify, render_template, request
 import requests
 from functools import lru_cache
+import os
 
 app = Flask(__name__)
+
+# detect environment (local or docker)
+product_service_host = "localhost" if os.getenv("HOSTNAME") is None else "product-service"
+cart_service_host = "localhost" if os.getenv("HOSTNAME") is None else "cart-service"
+review_service_host = "localhost" if os.getenv("HOSTNAME") is None else "review-service"
 
 # get product data
 @lru_cache(maxsize=128)
 def get_products(product_id):
     try:
-        response = requests.get(f'http://localhost:3000/products/{product_id}')
+        response = requests.get(f'http://{product_service_host}:3000/products/{product_id}')
         response.raise_for_status() 
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -18,7 +24,7 @@ def get_products(product_id):
 # get sold product data
 def get_sold_products(product_id):
     try:
-        response = requests.get(f'http://localhost:3002/cart/{product_id}')
+        response = requests.get(f'http://{cart_service_host}:3002/cart/{product_id}')
         response.raise_for_status()
         data = response.json()
 
@@ -42,7 +48,7 @@ def get_sold_products(product_id):
 # get review data
 def get_reviews(product_id):
     try:
-        response = requests.get(f'http://localhost:3004/products/{product_id}/reviews')
+        response = requests.get(f'http://{review_service_host}:3004/products/{product_id}/reviews')
         response.raise_for_status()
         data = response.json()
 
@@ -75,4 +81,4 @@ def get_product_info(product_id):
     return render_template('product.html', **combined_response)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3005)
+    app.run(debug=True, port=3005, host="0.0.0.0")

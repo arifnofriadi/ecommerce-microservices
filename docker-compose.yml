@@ -1,4 +1,17 @@
 services:
+  main-app:
+    build:
+      context: ./main-app  # Path ke folder main app
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3005"
+    depends_on:
+      - product-service
+      - cart-service
+      - review-service
+    environment:
+      - HOSTNAME=main-app
+
   product-service:
     build:
       context: ./product-services
