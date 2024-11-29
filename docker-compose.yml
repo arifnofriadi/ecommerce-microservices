@@ -75,10 +75,10 @@ services:
   product-db:
     image: mysql:8.0
     environment:
-      - DB_HOST=cart-db
-      - DB_USER=postgres 
+      - DB_HOST=product-db
+      - DB_USER=root
       - DB_PASSWORD=Dev@root23
-      - DB_NAME=cartdb
+      - DB_NAME=productdb
     volumes:
       - product-db-data:/var/lib/mysql
     healthcheck:
